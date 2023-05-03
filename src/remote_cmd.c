@@ -17,7 +17,7 @@ void process_remote_cmd(const char *cmd)
     }
 
     if (strcmp(argv[0], "perm") == 0 && argc == 4) {
-        struct player *player = get_player_by_name(g_level, argv[1]);
+        struct player *player = get_player_by_name(argv[1]);
         if (player) {
             int perm = atoi(argv[2]);
             bool display = atoi(argv[3]);
