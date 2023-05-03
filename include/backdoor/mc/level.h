@@ -7,8 +7,9 @@
 
 struct level;
 
-struct player *get_player_by_xuid(struct level *level, const char *xuid);
-struct player *get_player_by_name(struct level *level, const char *name);
+struct player *get_player_by_xuid(const char *xuid);
+struct player *get_player_by_name(const char *name);
 void run_game_cmd(const char *cmd);
+const char* get_player_names(void);
 
 extern struct level *g_level;
