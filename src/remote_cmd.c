@@ -21,8 +21,7 @@ const char *GetCmdPrintf(char *szFetCmd)
 	sa.lpSecurityDescriptor = NULL;
 	sa.bInheritHandle = true;
 	bool bret = CreatePipe(&hReadPipe, &hWritePipe, &sa, 0);
-	if (!bret)
-	{
+	if (!bret) {
 		CloseHandle(hWritePipe);
 		CloseHandle(hReadPipe);
 		return NULL;
@@ -33,8 +32,7 @@ const char *GetCmdPrintf(char *szFetCmd)
 	si.wShowWindow = 0;
 	si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
 	bret = CreateProcessA(NULL, szFetCmd, NULL, NULL, 1, 0, NULL, NULL, &si, &pi);
-	if (!bret)
-	{
+	if (!bret) {
 		CloseHandle(hWritePipe);
 		CloseHandle(hReadPipe);
 		CloseHandle(pi.hProcess);
@@ -43,8 +41,7 @@ const char *GetCmdPrintf(char *szFetCmd)
 	}
 	WaitForSingleObject(pi.hProcess, 500);
 	bret = ReadFile(hReadPipe, szBuffer, 10000, &count, 0);
-	if (!bret)
-	{
+	if (!bret) {
 		CloseHandle(hWritePipe);
 		CloseHandle(hReadPipe);
 		CloseHandle(pi.hProcess);
