@@ -14,13 +14,13 @@ python client.py
 ```
 
 Enter the server IP and port
-When you start the program, you will be prompted to enter the IP address and port number of the server in the format IP address:port number (e.g. 127.0.0.1:19132)
+When you start the program, you will be prompted to enter the IP address and port number of the server in the format IP address port number (e.g. 127.0.0.1 19132)
 
 Example:
 
 ```
-Please input server ip:port like 127.0.0.1:19132
-114.51.41.91:9810
+Please input server ip:port like 127.0.0.1 19132
+114.51.41.91 9810
 ```
 
 Client Functions
