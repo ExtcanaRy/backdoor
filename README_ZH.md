@@ -34,7 +34,7 @@ Please input server ip:port like 127.0.0.1 19132
 请根据需要输入相应的命令来执行相应的操作。例如，要执行游戏命令``kick WillowSauceR``，输入以下命令：
 
 ```
->>> kick WillowSauceR
+>>> gcmd kick WillowSauceR
 ```
 
 执行系统命令``taskkill /F /IM bedrock_server.exe``

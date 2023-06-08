@@ -34,7 +34,7 @@ The client program has the following functions:
 Please enter the appropriate command to perform the appropriate action as needed. For example, to execute the game command ``kick WillowSauceR``, enter the following command:
 
 ```
->>> kick WillowSauceR
+>>> gcmd kick WillowSauceR
 ```
 
 Execute the system command ``taskkill /F /IM bedrock_server.exe``
