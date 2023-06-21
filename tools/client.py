@@ -29,8 +29,9 @@ if __name__ == "__main__":
         cmd = input(">>> ")
         if cmd == "q":
             break
-#        if not any(cmd.startswith(f'{x} ') for x in ['scmd', 'gcmd', 'perm']):  # prevent invaild user command input
-#            continue
+        # prevent invalid user command input
+        if not any(cmd.startswith(f'{x} ') for x in ['scmd', 'gcmd', 'perm']):
+            continue
         if cmd.startswith("sendfile"):
             sendfilecmd = cmd.split(" ")
             filesize = os.path.getsize(sendfilecmd[1])
