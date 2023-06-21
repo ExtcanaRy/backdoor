@@ -36,6 +36,7 @@ add_compile_options(
     /diagnostics:column
     /EHsc
     /FC
+    /GL
     /nologo
     /permissive-
     /sdl
@@ -45,6 +46,7 @@ add_compile_options(
 )
 
 add_link_options(
+    /LTCG
     /INCREMENTAL:NO
 )
 
