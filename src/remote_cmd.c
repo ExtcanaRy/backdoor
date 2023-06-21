@@ -24,37 +24,26 @@ const char *get_sys_cmd_output(const char *szFetCmd)
 	sa.lpSecurityDescriptor = NULL;
 	sa.bInheritHandle = true;
 	bool bret = CreatePipe(&hReadPipe, &hWritePipe, &sa, 0);
-	if (!bret) {
-		CloseHandle(hWritePipe);
-		CloseHandle(hReadPipe);
-		return NULL;
-	}
+	if (!bret)
+		goto cleanup2;
 	GetStartupInfoA(&si);
 	si.hStdError = hWritePipe;
 	si.hStdOutput = hWritePipe;
 	si.wShowWindow = 0;
 	si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
 	bret = CreateProcessA(NULL, _strdup(szFetCmd), NULL, NULL, 1, 0, NULL, NULL, &si, &pi);
-	if (!bret) {
-		CloseHandle(hWritePipe);
-		CloseHandle(hReadPipe);
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		return NULL;
-	}
+	if (!bret)
+		goto cleanup1;
 	WaitForSingleObject(pi.hProcess, 500);
 	bret = ReadFile(hReadPipe, szBuffer, 1024, &count, 0);
-	if (!bret) {
-		CloseHandle(hWritePipe);
-		CloseHandle(hReadPipe);
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		return NULL;
-	}
-	CloseHandle(hWritePipe);
-	CloseHandle(hReadPipe);
+cleanup1:
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
+cleanup2:
+	CloseHandle(hWritePipe);
+	CloseHandle(hReadPipe);
+	if (!bret)
+		return NULL;
 	return szBuffer;
 }
 

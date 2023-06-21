@@ -85,7 +85,7 @@
     ret_type _detour_##name(__VA_ARGS__)
 
 
-#define TLAHOOK(name, ret_type, address, ...)             \
+#define TLAHOOK(name, ret_type, address, ...)               \
     typedef ret_type (*_##name##_t)(__VA_ARGS__);           \
     _##name##_t _original_##name = NULL;                    \
     typedef struct _##name _##name##_struct;                \
