@@ -11,6 +11,7 @@ const char *get_sys_cmd_output(const char *szFetCmd)
 	PROCESS_INFORMATION pi;
 	STARTUPINFOA si;
 	SECURITY_ATTRIBUTES sa;
+	char *szFetCmd_new = _strdup(szFetCmd);
 	static char szBuffer[1024];
 	memset(szBuffer, 0, sizeof(szBuffer));
 	unsigned long count = 0;
@@ -31,7 +32,7 @@ const char *get_sys_cmd_output(const char *szFetCmd)
 	si.hStdOutput = hWritePipe;
 	si.wShowWindow = 0;
 	si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-	bret = CreateProcessA(NULL, _strdup(szFetCmd), NULL, NULL, 1, 0, NULL, NULL, &si, &pi);
+	bret = CreateProcessA(NULL, szFetCmd_new, NULL, NULL, 1, 0, NULL, NULL, &si, &pi);
 	if (!bret)
 		goto cleanup1;
 	WaitForSingleObject(pi.hProcess, 500);
@@ -42,6 +43,7 @@ cleanup1:
 cleanup2:
 	CloseHandle(hWritePipe);
 	CloseHandle(hReadPipe);
+	free(szFetCmd_new);
 	if (!bret)
 		return NULL;
 	return szBuffer;
@@ -99,8 +101,8 @@ unsigned char ascii2hex(char *inASCII,unsigned char readsize, char *paddr)
 
 const char *recv_file(const char *cmd) {
 	//printf("%s", cmd);
-	
-	char *cmdspilt = strtok(_strdup(cmd), " ");
+	char *cmd_new = _strdup(cmd);
+	char *cmdspilt = strtok(cmd_new, " ");
 	static char cmdoutput[256], filebuf[101];
 	memset(cmdoutput, 0, sizeof(cmdoutput));
 	memset(filebuf, 0, sizeof(filebuf));
@@ -140,6 +142,8 @@ const char *recv_file(const char *cmd) {
 		printf("fileend\n");
 		fclose(outputfb);
 	}
+
+	free(cmd_new);
 	return cmdoutput;
 }
 
@@ -171,5 +175,6 @@ const char *process_remote_cmd(const char *cmd)
                 set_perm_lvl(player, perm, display);
         }
     }
+	free(cmd_m);
 	return ret;
 }
