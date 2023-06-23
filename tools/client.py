@@ -5,6 +5,7 @@ import threading
 import time
 
 file_offset = 0
+file_size = 0
 freeze = False
 
 def get_udp_socket(loc_port=random.randint(1024, 65535), timeout: int=1, use_ipv6: bool=False, loc_addr: str="") -> socket.socket:
@@ -28,27 +29,43 @@ def recv_msg(sk: socket.socket) -> str:
             return ""
     except socket.timeout:
         return ""
+    except OSError:
+        try:
+            sk.close()
+        except:
+            pass
+        sk = get_udp_socket(loc_port=random.randint(1024, 65535))
+        return recv_msg(sk)
 
 def upload_file_recv(sk: socket.socket, file):
     global file_offset, freeze
     while True:
         msg = recv_msg(sk)
-        if msg.startswith("set_offset"):
-            # freeze = True
-            file.seek(int(msg[11:]))
-            file_offset = int(msg[11:])
-        elif msg.startswith("end"):
+        try:
+            if msg.startswith("set_offset"):
+                file_offset_server = int(msg[11:])
+                file_offset = file.tell()
+                if (file_offset != file_offset_server):
+                    freeze = True
+                    print(time.strftime("%H:%M:%S:"), f"{file_offset}->{file_offset_server}({file_offset-file_offset_server})")
+                    file.seek(file_offset_server)
+                    file_offset = file_offset_server
+            elif msg.startswith("end"):
+                break
+        except:
             break
 
 def upload_file(local_path: str, remote_path: str, sk: socket.socket, target: tuple[str, int]):
-    global file_offset, freeze
+    global file_offset, freeze, file_size
     if os.path.exists(local_path):
         file_size = os.path.getsize(local_path)
         file_info = f"{file_size.__str__().ljust(20)} {remote_path}"
         start_msg = f"backdoor upload {'-1'.ljust(20)} {file_info}\0".encode("gbk")
         sk.sendto(start_msg, target)
 
+        sk.settimeout(5)
         ret_msg = recv_msg(sk)
+        sk.settimeout(1)
         if ret_msg:
             print(f"{ret_msg}")
             if ret_msg.endswith("failed!"):
@@ -66,13 +83,18 @@ def upload_file(local_path: str, remote_path: str, sk: socket.socket, target: tu
             while data_size == 1500:
                 if freeze:
                     time.sleep(0.5)
-                    freeze = True
+                    freeze = False
                 if file_offset + data_size > file_size:
                     data_size = file_size - file_offset
                 file_data = file.read(data_size)
                 data = f"backdoor upload {file_offset.__str__().ljust(20)} {data_size.__str__().ljust(4)} ".encode("gbk") + file_data
                 sk.sendto(data, target)
                 file_offset = file.tell()
+                # limit the upload speed to avoid packet loss
+                if (pkt_num % 32) == 0:
+                    if (pkt_num % 10240) == 0:
+                        print(time.strftime("%H:%M:%S: "), pkt_num)
+                    time.sleep(0.01)
                 pkt_num += 1
         print(pkt_num)
 
