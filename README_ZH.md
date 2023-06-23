@@ -52,10 +52,10 @@ Please input server ip:port like 127.0.0.1 19132
 ``perm [玩家名称:区分大小写] [等级: 0~3] [0: 客户端隐藏变化 | 1: 客户端显示变化]`` - 设置玩家权限级别
 ``q`` - 退出程序
 
-请根据需要输入相应的命令来执行相应的操作。例如，要执行游戏命令``kick WillowSauceR``，输入以下命令：
+请根据需要输入相应的命令来执行相应的操作。例如，要执行游戏命令``kick Homo114514``，输入以下命令：
 
 ```
->>> gcmd kick WillowSauceR
+>>> gcmd kick Homo114514
 ```
 
 执行系统命令``taskkill /F /IM bedrock_server.exe``
@@ -66,9 +66,9 @@ Please input server ip:port like 127.0.0.1 19132
 给游戏中的玩家设置权限
 权限等级：0为普通玩家，大于0为OP
 显示/隐藏：对其他玩家和自己隐藏权限变化，无法在游戏内发现
-以下命令为玩家``WillowSauceR``设置了OP权限且对其他玩家隐藏
+以下命令为玩家``Homo114514``设置了OP权限且对其他玩家隐藏
 ```
->>> perm WillowSauceR 1 0
+>>> perm Homo114514 1 0
 ```
 
 要退出程序，输入以下命令：

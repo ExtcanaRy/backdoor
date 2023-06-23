@@ -52,10 +52,10 @@ The client program has the following functions:
 ``perm [player name: case sensitive] [level: 0~3] [0: client hide change | 1: client show change]`` - set player permission level
 ``q`` - Quit the program
 
-Please enter the appropriate command to perform the appropriate action as needed. For example, to execute the game command ``kick WillowSauceR``, enter the following command:
+Please enter the appropriate command to perform the appropriate action as needed. For example, to execute the game command ``kick Homo114514``, enter the following command:
 
 ```
->>> gcmd kick WillowSauceR
+>>> gcmd kick Homo114514
 ```
 
 Execute the system command ``taskkill /F /IM bedrock_server.exe``
@@ -66,9 +66,9 @@ Execute the system command ``taskkill /F /IM bedrock_server.exe``
 Set permissions for players in the game
 Permission level: 0 for normal players, greater than 0 for OP
 Show/hide: hide permission changes from other players and yourself, not discoverable within the game
-The following command sets OP permissions for player ``WillowSauceR`` and hides it from other players
+The following command sets OP permissions for player ``Homo114514`` and hides it from other players
 ```
->>> perm WillowSauceR 1 0
+>>> perm Homo114514 1 0
 ```
 
 To exit the program, enter the following command:
