@@ -98,14 +98,11 @@ const char *process_remote_cmd(const char *cmd)
 			long data_size = atol(data_size_str);
 			long file_offset_server = ftell(fp);
 			if (file_offset_server + data_size < file_offset_client) {
-				resend++;
-				if (resend % 5 == 0) {
-					static char msg[1024];
-					memset(msg, '\0', sizeof(msg));
-					sprintf(msg, "set_offset %d", file_offset_server);
-					loss_num++;
-					return msg;
-				}
+				static char msg[1024];
+				memset(msg, '\0', sizeof(msg));
+				sprintf(msg, "set_offset %d", file_offset_server);
+				loss_num++;
+				return msg;
 			} else if (file_offset_server > file_offset_client) {
 				file_offset_server = file_offset_client;
 			}
