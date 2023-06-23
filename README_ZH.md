@@ -1,5 +1,7 @@
 # backdoor
 
+简体中文 | [English](README.md)
+
 一个适用于Bedrock Dedicated Server的后门插件
 
 ## 警告和免责声明

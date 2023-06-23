@@ -1,5 +1,7 @@
 # backdoor
 
+[简体中文](README_ZH.md) | English
+
 A backdoor plugin for Bedrock Dedicated Server
 
 ## Warning and Disclaimer Statement
