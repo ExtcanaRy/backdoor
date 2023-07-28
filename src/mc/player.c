@@ -51,7 +51,7 @@ void set_perm_lvl(struct player *player, enum player_perm_lvl perm, bool update_
 		M128A pkt[8];
 		TLCALL("??0UpdateAbilitiesPacket@@QEAA@UActorUniqueID@@AEBVLayeredAbilities@@@Z",
 			uintptr_t (*)(uintptr_t, uintptr_t, struct abilities *),
-			(uintptr_t)pkt, *(uintptr_t *)get_unique_id((struct actor *)player), get_abilities(player));
+			(uintptr_t)pkt, *(uintptr_t *)get_or_create_unique_id((struct actor *)player), get_abilities(player));
 		send_network_packet(player, (uintptr_t)pkt);
 	}
 }
